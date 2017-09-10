@@ -5,6 +5,7 @@
 #include <list>
 #include <math.h>
 #include <algorithm>
+#include <time.h>
 #include <boost/heap/fibonacci_heap.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #include "nanoflann.hpp"
@@ -65,6 +66,7 @@ public:
 	float getDist(int id1, int id2);
 	vector<int> getNeighbors( int id , float eps);
 	vector<int> getNeighbors_indexing( int id , float eps, int minPts );
+	bool isCore( int id , float eps , int minPts);
 	float coreDistance( int id, vector<int> &N , int minPts);
 	void runAlgorithm( float eps, int minPts);
 	void update( vector<int> &N, int &id, Heap &seeds, float &eps, int &minPts );

@@ -77,9 +77,6 @@ vector<int> optics::getNeighbors_indexing( int id , float eps, int minPts ){
 		std::vector<size_t> ret_indexes(num_results);
 		std::vector<float> out_dists_sqr(num_results);
 
-		nanoflann::KNNResultSet<float> resultSet(num_results);
-
-		resultSet.init(&ret_indexes[0], &out_dists_sqr[0] );
 		mat_index->query( &dataPts[id][0] , num_results, &ret_indexes[0], &out_dists_sqr[0]);
 		
 		auto it = lower_bound( out_dists_sqr.begin(), out_dists_sqr.end() , squared_eps );
@@ -99,6 +96,19 @@ vector<int> optics::getNeighbors_indexing( int id , float eps, int minPts ){
 	}
 }
 
+bool optics::isCore( int id , float eps , int minPts){
+
+	float squared_eps = eps*eps;
+
+	const size_t num_results = minPts;
+	std::vector<size_t> ret_indexes(num_results);
+	std::vector<float> out_dists_sqr(num_results);
+
+	mat_index->query( &dataPts[id][0] , num_results, &ret_indexes[0], &out_dists_sqr[0]);
+	
+	return ( out_dists_sqr.back() <= eps );
+}
+
 float optics::coreDistance( int id, vector<int> &N , int minPts){
 	
 	float dist = getDist( id, N[minPts-2] );
@@ -109,15 +119,19 @@ void optics::runAlgorithm( float eps, int minPts){
 
 	for( int i=0; i<descriptors.size(); i++){
 		
+    
 		if( descriptors[i].isProcessed )
 			continue;
 
-		vector<int> N = getNeighbors_indexing( i, eps, minPts );
+		// const clock_t begin_time = clock();
+		
 
 		descriptors[i].isProcessed = true;
 		ordered_list.push_back(i);
 
-		if( N.size() >= (minPts - 1) ){
+		if( isCore(i, eps, minPts) ){
+
+			vector<int> N = getNeighbors_indexing( i, eps, minPts );
 			Heap seeds;
 			update( N, i, seeds, eps, minPts );
 
@@ -125,15 +139,17 @@ void optics::runAlgorithm( float eps, int minPts){
 				// cout<<seeds.size()<<endl;
 				heap_data top = seeds.top();
 				seeds.pop();						
-				vector<int> N_p = getNeighbors_indexing( top.id, eps, minPts );
 				descriptors[top.id].isProcessed = true;
 				ordered_list.push_back( top.id );
 
-				if( N_p.size() >= minPts - 1 ){
+				if( isCore( top.id, eps, minPts ) ){
+					vector<int> N_p = getNeighbors_indexing( top.id, eps, minPts );
 					update( N_p, top.id, seeds, eps, minPts );
 				}
 			}
 		}
+
+		// std::cout << float( clock () - begin_time ) <<endl;
 	}
 }
 
@@ -159,7 +175,7 @@ void optics::update( vector<int> &N, int &id, Heap &seeds, float &eps, int &minP
 			if( newReachDistance < descriptors[Ni].reachability_distance ){
 				descriptors[Ni].reachability_distance = newReachDistance;
 				(*descriptors[Ni].handle).reachability_distance = newReachDistance;
-				seeds.update( descriptors[Ni].handle );
+				seeds.increase( descriptors[Ni].handle );
 			}
 		}
 	}

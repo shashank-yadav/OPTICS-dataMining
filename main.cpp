@@ -21,7 +21,9 @@ int main(int argc, char *argv[])
     optics O;
     
     O.readFile("data.tsv");
+    
     O.runAlgorithm(eps, minPts);
+    
     O.print();
 
     return 0;
