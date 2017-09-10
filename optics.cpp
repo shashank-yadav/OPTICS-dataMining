@@ -99,10 +99,10 @@ vector<int> optics::getNeighbors_indexing( int id , float eps, int minPts ){
 	}
 }
 
-float optics::coreDistance( int id, vector<int> N , int minPts){
+float optics::coreDistance( int id, vector<int> &N , int minPts){
 	
 	float dist = getDist( id, N[minPts-2] );
-	return sqrt( dist );
+	return dist;
 }
 
 void optics::runAlgorithm( float eps, int minPts){
@@ -148,7 +148,7 @@ void optics::update( vector<int> &N, int &id, Heap &seeds, float &eps, int &minP
 		if( descriptors[Ni].isProcessed )
 			continue;
 
-		float newReachDistance = max( coreDist , sqrt(getDist(id, Ni)) );
+		float newReachDistance = sqrt( max( coreDist , getDist(id, Ni) ) );
 
 		if(  descriptors[Ni].reachability_distance == -1 ){
 			

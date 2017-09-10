@@ -24,7 +24,6 @@ struct heap_data
 {
     int id;
     float reachability_distance;
-    // Heap::handle_type handle;
 
     heap_data(int id, float reachability_distance) : id(id), reachability_distance(reachability_distance) {}
 };
@@ -33,7 +32,7 @@ struct compare_heap_data
 {
     bool operator()(const heap_data& n1, const heap_data& n2) const
     {
-        return n1.reachability_distance < n2.reachability_distance;
+        return n1.reachability_distance > n2.reachability_distance;
     }
 };
 
@@ -66,7 +65,7 @@ public:
 	float getDist(int id1, int id2);
 	vector<int> getNeighbors( int id , float eps);
 	vector<int> getNeighbors_indexing( int id , float eps, int minPts );
-	float coreDistance( int id, vector<int> N , int minPts);
+	float coreDistance( int id, vector<int> &N , int minPts);
 	void runAlgorithm( float eps, int minPts);
 	void update( vector<int> &N, int &id, Heap &seeds, float &eps, int &minPts );
 	void print();
